@@ -4,831 +4,696 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sorting Algorithm Visualizer</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            font-family: 'Segoe UI', -apple-system, sans-serif;
+            background: #000;
             min-height: 100vh;
-            color: #fff;
+            overflow: hidden;
+            user-select: none;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
+        #canvas {
+            display: block;
+            background: #000;
         }
 
-        /* Header */
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .header h1 {
-            font-size: 2.5rem;
-            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
-        }
-        .header p {
-            color: #8892b0;
-            font-size: 1rem;
-        }
-
-        /* Controls */
+        /* Control Panel */
         .controls {
-            background: rgba(255,255,255,0.05);
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            background: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 20px 30px;
-            margin-bottom: 30px;
+            border-radius: 12px;
+            padding: 18px;
+            color: #fff;
+            z-index: 100;
+            border: 1px solid rgba(255,255,255,0.15);
+            min-width: 280px;
+        }
+
+        .controls h2 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #00ff88;
             display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
             align-items: center;
-            justify-content: center;
-            border: 1px solid rgba(255,255,255,0.1);
+            gap: 8px;
         }
 
-        .control-group {
+        .control-row {
             display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .control-label {
-            font-size: 11px;
-            color: #8892b0;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 10px;
         }
 
-        select, input[type="range"] {
+        .control-row label {
+            font-size: 12px;
+            color: #aaa;
+            min-width: 70px;
+        }
+
+        .control-row select,
+        .control-row input[type="range"] {
+            flex: 1;
+        }
+
+        select {
             background: rgba(255,255,255,0.1);
             border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 8px;
-            padding: 10px 16px;
+            border-radius: 6px;
+            padding: 8px 12px;
             color: #fff;
-            font-size: 14px;
+            font-size: 13px;
             cursor: pointer;
             outline: none;
-            transition: all 0.2s;
         }
-        select:hover, input[type="range"]:hover {
-            border-color: #3a7bd5;
-        }
-        select option {
-            background: #1a1a2e;
-        }
+        select option { background: #111; }
 
         input[type="range"] {
-            width: 150px;
-            height: 6px;
-            padding: 0;
             -webkit-appearance: none;
+            height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+            cursor: pointer;
         }
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            background: #00ff88;
             cursor: pointer;
-            border: 2px solid #fff;
+        }
+
+        .value-label {
+            font-size: 12px;
+            color: #00ff88;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
         }
 
         .btn {
-            padding: 12px 28px;
-            border-radius: 10px;
+            flex: 1;
+            padding: 10px 16px;
             border: none;
+            border-radius: 8px;
+            font-size: 13px;
             font-weight: 600;
-            font-size: 14px;
             cursor: pointer;
             transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
-        .btn-primary {
-            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+        .btn-start {
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            color: #000;
+        }
+        .btn-start:hover { transform: scale(1.02); }
+        .btn-start:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+        .btn-stop {
+            background: linear-gradient(135deg, #ff4444, #cc0000);
             color: #fff;
         }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(58, 123, 213, 0.4);
-        }
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-        .btn-secondary {
-            background: rgba(255,255,255,0.1);
+        .btn-shuffle {
+            background: rgba(255,255,255,0.15);
             color: #fff;
             border: 1px solid rgba(255,255,255,0.2);
         }
-        .btn-secondary:hover {
-            background: rgba(255,255,255,0.2);
-        }
-        .btn-stop {
-            background: linear-gradient(135deg, #ff416c, #ff4b2b);
-            color: #fff;
-        }
+        .btn-shuffle:hover { background: rgba(255,255,255,0.25); }
 
-        .value-display {
-            font-size: 14px;
-            color: #00d2ff;
-            font-weight: 600;
-            min-width: 40px;
-            text-align: center;
-        }
-
-        /* Visualizer */
-        .visualizer-container {
-            background: rgba(0,0,0,0.3);
-            border-radius: 16px;
-            padding: 30px;
-            margin-bottom: 30px;
-            border: 1px solid rgba(255,255,255,0.1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .visualizer {
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            gap: 2px;
-            height: 400px;
-            padding: 0 10px;
-        }
-
-        .bar {
-            flex: 1;
-            max-width: 50px;
-            min-width: 2px;
-            background: linear-gradient(180deg, #00d2ff 0%, #3a7bd5 100%);
-            border-radius: 4px 4px 0 0;
-            transition: height 0.05s ease, background 0.1s ease;
-            position: relative;
-        }
-        .bar.comparing {
-            background: linear-gradient(180deg, #ffd700 0%, #ff8c00 100%);
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-        }
-        .bar.swapping {
-            background: linear-gradient(180deg, #ff416c 0%, #ff4b2b 100%);
-            box-shadow: 0 0 20px rgba(255, 65, 108, 0.5);
-        }
-        .bar.sorted {
-            background: linear-gradient(180deg, #00ff88 0%, #00cc6a 100%);
-        }
-        .bar.pivot {
-            background: linear-gradient(180deg, #a855f7 0%, #7c3aed 100%);
-            box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
-        }
-
-        /* Stats */
-        .stats {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            margin-bottom: 30px;
-        }
-        .stat {
-            text-align: center;
-        }
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .stat-label {
-            font-size: 12px;
-            color: #8892b0;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 4px;
-        }
-
-        /* Algorithm Info */
-        .info-panel {
-            background: rgba(255,255,255,0.05);
-            border-radius: 16px;
-            padding: 24px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .info-title {
-            font-size: 1.2rem;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .info-title i {
-            color: #00d2ff;
-        }
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-        }
-        .info-item {
-            background: rgba(0,0,0,0.2);
-            padding: 16px;
-            border-radius: 10px;
-        }
-        .info-item-label {
-            font-size: 11px;
-            color: #8892b0;
-            text-transform: uppercase;
-            margin-bottom: 6px;
-        }
-        .info-item-value {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #fff;
-        }
-
-        /* Legend */
-        .legend {
-            display: flex;
-            justify-content: center;
-            gap: 24px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-        .legend-item {
+        .checkbox-row {
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 12px;
-            color: #8892b0;
+            margin-top: 10px;
         }
-        .legend-color {
-            width: 20px;
-            height: 12px;
-            border-radius: 3px;
-        }
-        .legend-color.normal { background: linear-gradient(90deg, #00d2ff, #3a7bd5); }
-        .legend-color.comparing { background: linear-gradient(90deg, #ffd700, #ff8c00); }
-        .legend-color.swapping { background: linear-gradient(90deg, #ff416c, #ff4b2b); }
-        .legend-color.sorted { background: linear-gradient(90deg, #00ff88, #00cc6a); }
-        .legend-color.pivot { background: linear-gradient(90deg, #a855f7, #7c3aed); }
+        .checkbox-row input { width: 16px; height: 16px; cursor: pointer; }
+        .checkbox-row label { font-size: 12px; color: #aaa; cursor: pointer; }
 
-        /* Sound indicator */
-        .sound-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
+        /* Stats Panel */
+        .stats {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 18px;
+            color: #fff;
+            z-index: 100;
+            border: 1px solid rgba(255,255,255,0.15);
+            min-width: 180px;
+        }
+
+        .stats h3 {
+            font-size: 14px;
+            color: #00ff88;
+            margin-bottom: 12px;
+        }
+
+        .stat-item {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
         }
-        .sound-btn.muted {
-            opacity: 0.5;
+        .stat-item .label { color: #888; }
+        .stat-item .value { color: #fff; font-weight: 600; }
+
+        /* Character */
+        .character {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 50;
+            pointer-events: none;
+            transition: transform 0.3s ease;
+        }
+        .character img {
+            max-height: 200px;
+            filter: drop-shadow(0 0 20px rgba(0,255,136,0.3));
+        }
+        .character.excited img {
+            animation: bounce 0.3s ease infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .header h1 { font-size: 1.8rem; }
-            .controls { padding: 16px; gap: 12px; }
-            .visualizer { height: 300px; }
-            .stats { gap: 20px; }
-            .stat-value { font-size: 1.5rem; }
+        /* Algorithm Info */
+        .algo-info {
+            position: fixed;
+            bottom: 15px;
+            left: 15px;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 15px 20px;
+            color: #fff;
+            z-index: 100;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        .algo-info h4 {
+            font-size: 14px;
+            color: #00ff88;
+            margin-bottom: 8px;
+        }
+        .algo-info p {
+            font-size: 12px;
+            color: #888;
+            line-height: 1.5;
+        }
+        .algo-info .complexity {
+            display: flex;
+            gap: 15px;
+            margin-top: 8px;
+        }
+        .algo-info .complexity span {
+            font-size: 11px;
+            color: #aaa;
+        }
+        .algo-info .complexity strong {
+            color: #fff;
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            z-index: 200;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00cc6a);
+            width: 0%;
+            transition: width 0.1s;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <h1><i class="fas fa-sort-amount-down"></i> Sorting Visualizer</h1>
-            <p>Watch sorting algorithms in action with sound</p>
-        </header>
+    <canvas id="canvas"></canvas>
 
-        <div class="controls">
-            <div class="control-group">
-                <span class="control-label">Algorithm</span>
-                <select id="algorithm">
-                    <option value="bubble">Bubble Sort</option>
-                    <option value="selection">Selection Sort</option>
-                    <option value="insertion">Insertion Sort</option>
-                    <option value="merge">Merge Sort</option>
-                    <option value="quick">Quick Sort</option>
-                    <option value="heap">Heap Sort</option>
-                    <option value="shell">Shell Sort</option>
-                    <option value="cocktail">Cocktail Sort</option>
-                </select>
-            </div>
+    <div class="controls">
+        <h2>🎵 Sorting Visualizer</h2>
 
-            <div class="control-group">
-                <span class="control-label">Array Size: <span id="sizeValue">50</span></span>
-                <input type="range" id="arraySize" min="10" max="200" value="50">
-            </div>
-
-            <div class="control-group">
-                <span class="control-label">Speed: <span id="speedValue">50</span>ms</span>
-                <input type="range" id="speed" min="1" max="200" value="50">
-            </div>
-
-            <button class="btn btn-secondary" id="generateBtn">
-                <i class="fas fa-random"></i> Generate
-            </button>
-
-            <button class="btn btn-primary" id="sortBtn">
-                <i class="fas fa-play"></i> Sort
-            </button>
-
-            <button class="btn btn-stop" id="stopBtn" style="display: none;">
-                <i class="fas fa-stop"></i> Stop
-            </button>
-
-            <button class="btn btn-secondary sound-btn" id="soundBtn">
-                <i class="fas fa-volume-up"></i>
-            </button>
+        <div class="control-row">
+            <label>Algorithm</label>
+            <select id="algorithm">
+                <option value="bubble">Bubble Sort</option>
+                <option value="selection">Selection Sort</option>
+                <option value="insertion">Insertion Sort</option>
+                <option value="merge">Merge Sort</option>
+                <option value="quick">Quick Sort</option>
+                <option value="heap">Heap Sort</option>
+                <option value="radix">Radix Sort (LSD)</option>
+                <option value="counting">Counting Sort</option>
+                <option value="shell">Shell Sort</option>
+                <option value="cocktail">Cocktail Shaker</option>
+                <option value="comb">Comb Sort</option>
+                <option value="gnome">Gnome Sort</option>
+                <option value="oddeven">Odd-Even Sort</option>
+                <option value="bitonic">Bitonic Sort</option>
+            </select>
         </div>
 
-        <div class="stats">
-            <div class="stat">
-                <div class="stat-value" id="comparisons">0</div>
-                <div class="stat-label">Comparisons</div>
-            </div>
-            <div class="stat">
-                <div class="stat-value" id="swaps">0</div>
-                <div class="stat-label">Swaps</div>
-            </div>
-            <div class="stat">
-                <div class="stat-value" id="time">0.00s</div>
-                <div class="stat-label">Time</div>
-            </div>
+        <div class="control-row">
+            <label>Size</label>
+            <input type="range" id="arraySize" min="16" max="512" value="128">
+            <span class="value-label" id="sizeLabel">128</span>
         </div>
 
-        <div class="visualizer-container">
-            <div class="visualizer" id="visualizer"></div>
-            <div class="legend">
-                <div class="legend-item"><div class="legend-color normal"></div> Normal</div>
-                <div class="legend-item"><div class="legend-color comparing"></div> Comparing</div>
-                <div class="legend-item"><div class="legend-color swapping"></div> Swapping</div>
-                <div class="legend-item"><div class="legend-color pivot"></div> Pivot</div>
-                <div class="legend-item"><div class="legend-color sorted"></div> Sorted</div>
-            </div>
+        <div class="control-row">
+            <label>Speed</label>
+            <input type="range" id="speed" min="0" max="100" value="85">
+            <span class="value-label" id="speedLabel">Fast</span>
         </div>
 
-        <div class="info-panel">
-            <div class="info-title">
-                <i class="fas fa-info-circle"></i>
-                <span id="algoName">Bubble Sort</span>
-            </div>
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="info-item-label">Time Complexity (Best)</div>
-                    <div class="info-item-value" id="timeBest">O(n)</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-item-label">Time Complexity (Average)</div>
-                    <div class="info-item-value" id="timeAvg">O(n²)</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-item-label">Time Complexity (Worst)</div>
-                    <div class="info-item-value" id="timeWorst">O(n²)</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-item-label">Space Complexity</div>
-                    <div class="info-item-value" id="space">O(1)</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-item-label">Stable</div>
-                    <div class="info-item-value" id="stable">Yes</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-item-label">Method</div>
-                    <div class="info-item-value" id="method">Exchanging</div>
-                </div>
-            </div>
+        <div class="checkbox-row">
+            <input type="checkbox" id="soundEnabled" checked>
+            <label for="soundEnabled">🔊 Sound Effects</label>
         </div>
+
+        <div class="checkbox-row">
+            <input type="checkbox" id="rainbowMode">
+            <label for="rainbowMode">🌈 Rainbow Mode</label>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-shuffle" id="shuffleBtn">Shuffle</button>
+            <button class="btn btn-start" id="startBtn">▶ Start</button>
+        </div>
+    </div>
+
+    <div class="stats">
+        <h3>📊 Statistics</h3>
+        <div class="stat-item">
+            <span class="label">Comparisons</span>
+            <span class="value" id="comparisons">0</span>
+        </div>
+        <div class="stat-item">
+            <span class="label">Array Accesses</span>
+            <span class="value" id="accesses">0</span>
+        </div>
+        <div class="stat-item">
+            <span class="label">Time</span>
+            <span class="value" id="time">0.00s</span>
+        </div>
+        <div class="stat-item">
+            <span class="label">Status</span>
+            <span class="value" id="status">Ready</span>
+        </div>
+    </div>
+
+    <div class="character" id="character">
+        <img src="character.webp" alt="Character">
+    </div>
+
+    <div class="algo-info" id="algoInfo">
+        <h4 id="algoName">Bubble Sort</h4>
+        <div class="complexity">
+            <span>Best: <strong id="bestTime">O(n)</strong></span>
+            <span>Avg: <strong id="avgTime">O(n²)</strong></span>
+            <span>Worst: <strong id="worstTime">O(n²)</strong></span>
+        </div>
+    </div>
+
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
     </div>
 
     <script>
     // ==========================================
-    // Sorting Algorithm Visualizer with Sound
+    // Sorting Algorithm Visualizer v2.0
     // ==========================================
 
-    // Algorithm info database
-    const algorithmInfo = {
-        bubble: {
-            name: 'Bubble Sort',
-            timeBest: 'O(n)',
-            timeAvg: 'O(n²)',
-            timeWorst: 'O(n²)',
-            space: 'O(1)',
-            stable: 'Yes',
-            method: 'Exchanging'
-        },
-        selection: {
-            name: 'Selection Sort',
-            timeBest: 'O(n²)',
-            timeAvg: 'O(n²)',
-            timeWorst: 'O(n²)',
-            space: 'O(1)',
-            stable: 'No',
-            method: 'Selection'
-        },
-        insertion: {
-            name: 'Insertion Sort',
-            timeBest: 'O(n)',
-            timeAvg: 'O(n²)',
-            timeWorst: 'O(n²)',
-            space: 'O(1)',
-            stable: 'Yes',
-            method: 'Insertion'
-        },
-        merge: {
-            name: 'Merge Sort',
-            timeBest: 'O(n log n)',
-            timeAvg: 'O(n log n)',
-            timeWorst: 'O(n log n)',
-            space: 'O(n)',
-            stable: 'Yes',
-            method: 'Merging'
-        },
-        quick: {
-            name: 'Quick Sort',
-            timeBest: 'O(n log n)',
-            timeAvg: 'O(n log n)',
-            timeWorst: 'O(n²)',
-            space: 'O(log n)',
-            stable: 'No',
-            method: 'Partitioning'
-        },
-        heap: {
-            name: 'Heap Sort',
-            timeBest: 'O(n log n)',
-            timeAvg: 'O(n log n)',
-            timeWorst: 'O(n log n)',
-            space: 'O(1)',
-            stable: 'No',
-            method: 'Selection'
-        },
-        shell: {
-            name: 'Shell Sort',
-            timeBest: 'O(n log n)',
-            timeAvg: 'O(n^1.3)',
-            timeWorst: 'O(n²)',
-            space: 'O(1)',
-            stable: 'No',
-            method: 'Insertion'
-        },
-        cocktail: {
-            name: 'Cocktail Shaker Sort',
-            timeBest: 'O(n)',
-            timeAvg: 'O(n²)',
-            timeWorst: 'O(n²)',
-            space: 'O(1)',
-            stable: 'Yes',
-            method: 'Exchanging'
-        }
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Resize canvas
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Algorithm info
+    const algoData = {
+        bubble: { name: 'Bubble Sort', best: 'O(n)', avg: 'O(n²)', worst: 'O(n²)' },
+        selection: { name: 'Selection Sort', best: 'O(n²)', avg: 'O(n²)', worst: 'O(n²)' },
+        insertion: { name: 'Insertion Sort', best: 'O(n)', avg: 'O(n²)', worst: 'O(n²)' },
+        merge: { name: 'Merge Sort', best: 'O(n log n)', avg: 'O(n log n)', worst: 'O(n log n)' },
+        quick: { name: 'Quick Sort', best: 'O(n log n)', avg: 'O(n log n)', worst: 'O(n²)' },
+        heap: { name: 'Heap Sort', best: 'O(n log n)', avg: 'O(n log n)', worst: 'O(n log n)' },
+        radix: { name: 'Radix Sort (LSD)', best: 'O(nk)', avg: 'O(nk)', worst: 'O(nk)' },
+        counting: { name: 'Counting Sort', best: 'O(n+k)', avg: 'O(n+k)', worst: 'O(n+k)' },
+        shell: { name: 'Shell Sort', best: 'O(n log n)', avg: 'O(n^1.3)', worst: 'O(n²)' },
+        cocktail: { name: 'Cocktail Shaker Sort', best: 'O(n)', avg: 'O(n²)', worst: 'O(n²)' },
+        comb: { name: 'Comb Sort', best: 'O(n log n)', avg: 'O(n²/2^p)', worst: 'O(n²)' },
+        gnome: { name: 'Gnome Sort', best: 'O(n)', avg: 'O(n²)', worst: 'O(n²)' },
+        oddeven: { name: 'Odd-Even Sort', best: 'O(n)', avg: 'O(n²)', worst: 'O(n²)' },
+        bitonic: { name: 'Bitonic Sort', best: 'O(log²n)', avg: 'O(log²n)', worst: 'O(log²n)' }
     };
 
     // State
     let array = [];
+    let sortedIndices = new Set();
+    let highlightIndices = [];
+    let highlightType = 'normal'; // 'comparing', 'swapping', 'sorted'
     let sorting = false;
     let stopped = false;
     let comparisons = 0;
-    let swaps = 0;
+    let accesses = 0;
     let startTime = 0;
-    let soundEnabled = true;
+    let sortedCount = 0;
 
-    // Audio Context
+    // Audio
     let audioCtx = null;
+    let mainGain = null;
 
     function initAudio() {
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            mainGain = audioCtx.createGain();
+            mainGain.gain.value = 0.15;
+            mainGain.connect(audioCtx.destination);
         }
         if (audioCtx.state === 'suspended') {
             audioCtx.resume();
         }
     }
 
-    function playSound(value, maxValue) {
-        if (!soundEnabled || !audioCtx) return;
+    function playTone(frequency, duration = 0.05, type = 'sine') {
+        if (!document.getElementById('soundEnabled').checked || !audioCtx) return;
 
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
 
-        // Map value to frequency (200Hz - 1200Hz)
-        const frequency = 200 + (value / maxValue) * 1000;
+        osc.type = type;
+        osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
 
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
 
-        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
 
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-
-        oscillator.start();
-        oscillator.stop(audioCtx.currentTime + 0.1);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
     }
 
-    function playSwapSound(value1, value2, maxValue) {
-        if (!soundEnabled || !audioCtx) return;
-
-        const freq1 = 200 + (value1 / maxValue) * 1000;
-        const freq2 = 200 + (value2 / maxValue) * 1000;
-
-        [freq1, freq2].forEach((freq, i) => {
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-
-            oscillator.type = 'triangle';
-            oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.05);
-
-            gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime + i * 0.05);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15 + i * 0.05);
-
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-
-            oscillator.start(audioCtx.currentTime + i * 0.05);
-            oscillator.stop(audioCtx.currentTime + 0.15 + i * 0.05);
-        });
+    function valueToFreq(value, maxValue) {
+        // Map to musical scale (C3 to C6)
+        const minFreq = 130.81; // C3
+        const maxFreq = 1046.50; // C6
+        return minFreq + (value / maxValue) * (maxFreq - minFreq);
     }
 
-    function playCompletionSound() {
-        if (!soundEnabled || !audioCtx) return;
+    function playAccess(index) {
+        if (!array[index]) return;
+        const freq = valueToFreq(array[index], array.length);
+        playTone(freq, 0.05, 'sine');
+    }
 
-        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+    function playCompletion() {
+        if (!document.getElementById('soundEnabled').checked || !audioCtx) return;
 
+        const notes = [523.25, 659.25, 783.99, 1046.50];
         notes.forEach((freq, i) => {
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.15);
-
-            gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime + i * 0.15);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4 + i * 0.15);
-
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-
-            oscillator.start(audioCtx.currentTime + i * 0.15);
-            oscillator.stop(audioCtx.currentTime + 0.5 + i * 0.15);
+            setTimeout(() => playTone(freq, 0.2, 'sine'), i * 100);
         });
     }
 
-    // DOM Elements
-    const visualizer = document.getElementById('visualizer');
+    // DOM
     const algorithmSelect = document.getElementById('algorithm');
     const arraySizeSlider = document.getElementById('arraySize');
     const speedSlider = document.getElementById('speed');
-    const generateBtn = document.getElementById('generateBtn');
-    const sortBtn = document.getElementById('sortBtn');
-    const stopBtn = document.getElementById('stopBtn');
-    const soundBtn = document.getElementById('soundBtn');
+    const startBtn = document.getElementById('startBtn');
+    const shuffleBtn = document.getElementById('shuffleBtn');
+    const character = document.getElementById('character');
 
-    // Generate random array
+    // Generate array
     function generateArray() {
         const size = parseInt(arraySizeSlider.value);
         array = [];
-        for (let i = 0; i < size; i++) {
-            array.push(Math.floor(Math.random() * 95) + 5);
+        for (let i = 1; i <= size; i++) {
+            array.push(i);
         }
-        renderArray();
-        resetStats();
+        shuffle();
     }
 
-    // Render array as bars
-    function renderArray(highlights = {}) {
-        visualizer.innerHTML = '';
-        const maxVal = Math.max(...array);
-
-        array.forEach((value, index) => {
-            const bar = document.createElement('div');
-            bar.className = 'bar';
-            bar.style.height = `${(value / maxVal) * 100}%`;
-
-            if (highlights.comparing && highlights.comparing.includes(index)) {
-                bar.classList.add('comparing');
-            }
-            if (highlights.swapping && highlights.swapping.includes(index)) {
-                bar.classList.add('swapping');
-            }
-            if (highlights.sorted && highlights.sorted.includes(index)) {
-                bar.classList.add('sorted');
-            }
-            if (highlights.pivot === index) {
-                bar.classList.add('pivot');
-            }
-
-            visualizer.appendChild(bar);
-        });
+    function shuffle() {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        sortedIndices.clear();
+        highlightIndices = [];
+        resetStats();
+        render();
     }
 
     function resetStats() {
         comparisons = 0;
-        swaps = 0;
+        accesses = 0;
+        sortedCount = 0;
         document.getElementById('comparisons').textContent = '0';
-        document.getElementById('swaps').textContent = '0';
+        document.getElementById('accesses').textContent = '0';
         document.getElementById('time').textContent = '0.00s';
+        document.getElementById('status').textContent = 'Ready';
+        document.getElementById('progressFill').style.width = '0%';
     }
 
     function updateStats() {
         document.getElementById('comparisons').textContent = comparisons.toLocaleString();
-        document.getElementById('swaps').textContent = swaps.toLocaleString();
+        document.getElementById('accesses').textContent = accesses.toLocaleString();
         const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
         document.getElementById('time').textContent = elapsed + 's';
     }
 
+    function updateProgress() {
+        const progress = (sortedIndices.size / array.length) * 100;
+        document.getElementById('progressFill').style.width = progress + '%';
+    }
+
     function getDelay() {
-        return parseInt(speedSlider.value);
+        const speed = parseInt(speedSlider.value);
+        // Exponential scale: 0 = 500ms, 100 = 0ms
+        return Math.floor(500 * Math.pow(0.95, speed));
     }
 
     async function sleep(ms) {
+        if (ms <= 0) return;
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    // Update algorithm info
-    function updateAlgorithmInfo() {
-        const algo = algorithmSelect.value;
-        const info = algorithmInfo[algo];
+    // Render
+    function render() {
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+        const n = array.length;
+        const barWidth = canvas.width / n;
+        const maxVal = Math.max(...array);
+        const rainbow = document.getElementById('rainbowMode').checked;
+
+        for (let i = 0; i < n; i++) {
+            const barHeight = (array[i] / maxVal) * (canvas.height - 50);
+            const x = i * barWidth;
+            const y = canvas.height - barHeight;
+
+            let color;
+            if (sortedIndices.has(i)) {
+                color = '#00ff88';
+            } else if (highlightIndices.includes(i)) {
+                if (highlightType === 'comparing') {
+                    color = '#ffff00';
+                } else if (highlightType === 'swapping') {
+                    color = '#ff4444';
+                } else if (highlightType === 'pivot') {
+                    color = '#ff00ff';
+                } else {
+                    color = '#00aaff';
+                }
+            } else if (rainbow) {
+                const hue = (array[i] / maxVal) * 360;
+                color = `hsl(${hue}, 100%, 50%)`;
+            } else {
+                const brightness = 30 + (array[i] / maxVal) * 70;
+                color = `hsl(200, 80%, ${brightness}%)`;
+            }
+
+            ctx.fillStyle = color;
+
+            if (barWidth > 2) {
+                ctx.fillRect(x + 0.5, y, barWidth - 1, barHeight);
+            } else {
+                ctx.fillRect(x, y, barWidth, barHeight);
+            }
+        }
+    }
+
+    // Update algorithm info
+    function updateAlgoInfo() {
+        const algo = algorithmSelect.value;
+        const info = algoData[algo];
         document.getElementById('algoName').textContent = info.name;
-        document.getElementById('timeBest').textContent = info.timeBest;
-        document.getElementById('timeAvg').textContent = info.timeAvg;
-        document.getElementById('timeWorst').textContent = info.timeWorst;
-        document.getElementById('space').textContent = info.space;
-        document.getElementById('stable').textContent = info.stable;
-        document.getElementById('method').textContent = info.method;
+        document.getElementById('bestTime').textContent = info.best;
+        document.getElementById('avgTime').textContent = info.avg;
+        document.getElementById('worstTime').textContent = info.worst;
     }
 
     // ==========================================
     // Sorting Algorithms
     // ==========================================
 
+    async function compare(i, j) {
+        comparisons++;
+        accesses += 2;
+        highlightIndices = [i, j];
+        highlightType = 'comparing';
+        playAccess(i);
+        render();
+        updateStats();
+        await sleep(getDelay());
+        return array[i] - array[j];
+    }
+
+    async function swap(i, j) {
+        accesses += 4;
+        [array[i], array[j]] = [array[j], array[i]];
+        highlightIndices = [i, j];
+        highlightType = 'swapping';
+        playAccess(i);
+        playAccess(j);
+        render();
+        updateStats();
+        await sleep(getDelay());
+    }
+
+    async function markSorted(indices) {
+        indices.forEach(i => sortedIndices.add(i));
+        updateProgress();
+        render();
+    }
+
+    // Bubble Sort
     async function bubbleSort() {
         const n = array.length;
-        const maxVal = Math.max(...array);
-
         for (let i = 0; i < n - 1; i++) {
             for (let j = 0; j < n - i - 1; j++) {
                 if (stopped) return;
-
-                comparisons++;
-                renderArray({ comparing: [j, j + 1] });
-                playSound(array[j], maxVal);
-                await sleep(getDelay());
-
-                if (array[j] > array[j + 1]) {
-                    swaps++;
-                    playSwapSound(array[j], array[j + 1], maxVal);
-                    [array[j], array[j + 1]] = [array[j + 1], array[j]];
-                    renderArray({ swapping: [j, j + 1] });
-                    await sleep(getDelay());
+                if (await compare(j, j + 1) > 0) {
+                    await swap(j, j + 1);
                 }
-
-                updateStats();
             }
+            await markSorted([n - i - 1]);
         }
+        await markSorted([0]);
     }
 
+    // Selection Sort
     async function selectionSort() {
         const n = array.length;
-        const maxVal = Math.max(...array);
-
         for (let i = 0; i < n - 1; i++) {
             let minIdx = i;
-
             for (let j = i + 1; j < n; j++) {
                 if (stopped) return;
-
-                comparisons++;
-                renderArray({ comparing: [minIdx, j], sorted: [...Array(i).keys()] });
-                playSound(array[j], maxVal);
-                await sleep(getDelay());
-
-                if (array[j] < array[minIdx]) {
+                if (await compare(j, minIdx) < 0) {
                     minIdx = j;
                 }
-                updateStats();
             }
-
             if (minIdx !== i) {
-                swaps++;
-                playSwapSound(array[i], array[minIdx], maxVal);
-                [array[i], array[minIdx]] = [array[minIdx], array[i]];
-                renderArray({ swapping: [i, minIdx], sorted: [...Array(i).keys()] });
-                await sleep(getDelay());
+                await swap(i, minIdx);
             }
+            await markSorted([i]);
         }
+        await markSorted([n - 1]);
     }
 
+    // Insertion Sort
     async function insertionSort() {
         const n = array.length;
-        const maxVal = Math.max(...array);
-
         for (let i = 1; i < n; i++) {
-            let key = array[i];
-            let j = i - 1;
-
-            renderArray({ comparing: [i], sorted: [...Array(i).keys()] });
-            playSound(key, maxVal);
-            await sleep(getDelay());
-
-            while (j >= 0 && array[j] > key) {
+            let j = i;
+            while (j > 0) {
                 if (stopped) return;
-
-                comparisons++;
-                array[j + 1] = array[j];
-                swaps++;
-
-                renderArray({ swapping: [j, j + 1], sorted: [...Array(i).keys()] });
-                playSwapSound(array[j], key, maxVal);
-                await sleep(getDelay());
-
-                j--;
-                updateStats();
+                if (await compare(j - 1, j) > 0) {
+                    await swap(j - 1, j);
+                    j--;
+                } else {
+                    break;
+                }
             }
-
-            array[j + 1] = key;
         }
     }
 
+    // Merge Sort
     async function mergeSort() {
         await mergeSortHelper(0, array.length - 1);
     }
 
     async function mergeSortHelper(left, right) {
         if (left >= right || stopped) return;
-
         const mid = Math.floor((left + right) / 2);
-
         await mergeSortHelper(left, mid);
         await mergeSortHelper(mid + 1, right);
         await merge(left, mid, right);
     }
 
     async function merge(left, mid, right) {
-        const maxVal = Math.max(...array);
-        const leftArr = array.slice(left, mid + 1);
-        const rightArr = array.slice(mid + 1, right + 1);
+        const temp = [];
+        let i = left, j = mid + 1;
 
-        let i = 0, j = 0, k = left;
-
-        while (i < leftArr.length && j < rightArr.length) {
+        while (i <= mid && j <= right) {
             if (stopped) return;
-
             comparisons++;
-            renderArray({ comparing: [left + i, mid + 1 + j] });
-            playSound((leftArr[i] + rightArr[j]) / 2, maxVal);
+            accesses += 2;
+            highlightIndices = [i, j];
+            highlightType = 'comparing';
+            playAccess(i);
+            render();
+            updateStats();
             await sleep(getDelay());
 
-            if (leftArr[i] <= rightArr[j]) {
-                array[k] = leftArr[i];
-                i++;
+            if (array[i] <= array[j]) {
+                temp.push(array[i++]);
             } else {
-                array[k] = rightArr[j];
-                j++;
+                temp.push(array[j++]);
             }
-            swaps++;
-            renderArray({ swapping: [k] });
-            await sleep(getDelay());
-            k++;
-            updateStats();
         }
 
-        while (i < leftArr.length) {
-            if (stopped) return;
-            array[k] = leftArr[i];
-            swaps++;
-            renderArray({ swapping: [k] });
-            playSound(leftArr[i], maxVal);
-            await sleep(getDelay());
-            i++;
-            k++;
-            updateStats();
-        }
+        while (i <= mid) temp.push(array[i++]);
+        while (j <= right) temp.push(array[j++]);
 
-        while (j < rightArr.length) {
+        for (let k = 0; k < temp.length; k++) {
             if (stopped) return;
-            array[k] = rightArr[j];
-            swaps++;
-            renderArray({ swapping: [k] });
-            playSound(rightArr[j], maxVal);
-            await sleep(getDelay());
-            j++;
-            k++;
+            array[left + k] = temp[k];
+            accesses++;
+            highlightIndices = [left + k];
+            highlightType = 'swapping';
+            playAccess(left + k);
+            render();
             updateStats();
+            await sleep(getDelay() / 2);
         }
     }
 
+    // Quick Sort
     async function quickSort() {
         await quickSortHelper(0, array.length - 1);
     }
@@ -842,199 +707,326 @@
     }
 
     async function partition(low, high) {
-        const maxVal = Math.max(...array);
         const pivot = array[high];
+        highlightIndices = [high];
+        highlightType = 'pivot';
+        render();
+
         let i = low - 1;
-
-        renderArray({ pivot: high });
-        await sleep(getDelay());
-
         for (let j = low; j < high; j++) {
             if (stopped) return low;
-
             comparisons++;
-            renderArray({ comparing: [j], pivot: high });
-            playSound(array[j], maxVal);
+            accesses++;
+            highlightIndices = [j, high];
+            highlightType = 'comparing';
+            playAccess(j);
+            render();
+            updateStats();
             await sleep(getDelay());
 
             if (array[j] < pivot) {
                 i++;
-                swaps++;
-                [array[i], array[j]] = [array[j], array[i]];
-                renderArray({ swapping: [i, j], pivot: high });
-                playSwapSound(array[i], array[j], maxVal);
-                await sleep(getDelay());
+                await swap(i, j);
             }
-            updateStats();
         }
-
-        swaps++;
-        [array[i + 1], array[high]] = [array[high], array[i + 1]];
-        renderArray({ swapping: [i + 1, high] });
-        playSwapSound(array[i + 1], array[high], maxVal);
-        await sleep(getDelay());
-
+        await swap(i + 1, high);
+        await markSorted([i + 1]);
         return i + 1;
     }
 
+    // Heap Sort
     async function heapSort() {
         const n = array.length;
 
-        // Build max heap
         for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
             await heapify(n, i);
         }
 
-        // Extract elements
         for (let i = n - 1; i > 0; i--) {
             if (stopped) return;
-
-            swaps++;
-            [array[0], array[i]] = [array[i], array[0]];
-            const maxVal = Math.max(...array);
-            renderArray({ swapping: [0, i], sorted: Array.from({length: n - i}, (_, k) => n - 1 - k) });
-            playSwapSound(array[0], array[i], maxVal);
-            await sleep(getDelay());
-
+            await swap(0, i);
+            await markSorted([i]);
             await heapify(i, 0);
-            updateStats();
         }
+        await markSorted([0]);
     }
 
     async function heapify(n, i) {
-        const maxVal = Math.max(...array);
         let largest = i;
         const left = 2 * i + 1;
         const right = 2 * i + 2;
 
         if (left < n) {
-            comparisons++;
-            if (array[left] > array[largest]) {
+            if (await compare(left, largest) > 0) {
                 largest = left;
             }
         }
 
         if (right < n) {
-            comparisons++;
-            if (array[right] > array[largest]) {
+            if (await compare(right, largest) > 0) {
                 largest = right;
             }
         }
 
-        if (largest !== i) {
-            if (stopped) return;
-
-            swaps++;
-            [array[i], array[largest]] = [array[largest], array[i]];
-            renderArray({ swapping: [i, largest] });
-            playSwapSound(array[i], array[largest], maxVal);
-            await sleep(getDelay());
-            updateStats();
-
+        if (largest !== i && !stopped) {
+            await swap(i, largest);
             await heapify(n, largest);
         }
     }
 
+    // Radix Sort (LSD)
+    async function radixSort() {
+        const max = Math.max(...array);
+        for (let exp = 1; Math.floor(max / exp) > 0; exp *= 10) {
+            await countingSortByDigit(exp);
+        }
+    }
+
+    async function countingSortByDigit(exp) {
+        const n = array.length;
+        const output = new Array(n);
+        const count = new Array(10).fill(0);
+
+        for (let i = 0; i < n; i++) {
+            if (stopped) return;
+            const digit = Math.floor(array[i] / exp) % 10;
+            count[digit]++;
+            accesses++;
+            highlightIndices = [i];
+            highlightType = 'comparing';
+            playAccess(i);
+            render();
+            updateStats();
+            await sleep(getDelay() / 2);
+        }
+
+        for (let i = 1; i < 10; i++) {
+            count[i] += count[i - 1];
+        }
+
+        for (let i = n - 1; i >= 0; i--) {
+            if (stopped) return;
+            const digit = Math.floor(array[i] / exp) % 10;
+            output[count[digit] - 1] = array[i];
+            count[digit]--;
+        }
+
+        for (let i = 0; i < n; i++) {
+            if (stopped) return;
+            array[i] = output[i];
+            accesses++;
+            highlightIndices = [i];
+            highlightType = 'swapping';
+            playAccess(i);
+            render();
+            updateStats();
+            await sleep(getDelay() / 2);
+        }
+    }
+
+    // Counting Sort
+    async function countingSort() {
+        const max = Math.max(...array);
+        const count = new Array(max + 1).fill(0);
+        const output = new Array(array.length);
+
+        for (let i = 0; i < array.length; i++) {
+            if (stopped) return;
+            count[array[i]]++;
+            accesses++;
+            highlightIndices = [i];
+            highlightType = 'comparing';
+            playAccess(i);
+            render();
+            updateStats();
+            await sleep(getDelay());
+        }
+
+        for (let i = 1; i <= max; i++) {
+            count[i] += count[i - 1];
+        }
+
+        for (let i = array.length - 1; i >= 0; i--) {
+            if (stopped) return;
+            output[count[array[i]] - 1] = array[i];
+            count[array[i]]--;
+        }
+
+        for (let i = 0; i < array.length; i++) {
+            if (stopped) return;
+            array[i] = output[i];
+            accesses++;
+            highlightIndices = [i];
+            highlightType = 'swapping';
+            playAccess(i);
+            await markSorted([i]);
+            render();
+            updateStats();
+            await sleep(getDelay());
+        }
+    }
+
+    // Shell Sort
     async function shellSort() {
         const n = array.length;
-        const maxVal = Math.max(...array);
-
         for (let gap = Math.floor(n / 2); gap > 0; gap = Math.floor(gap / 2)) {
             for (let i = gap; i < n; i++) {
-                if (stopped) return;
-
-                let temp = array[i];
-                let j;
-
-                comparisons++;
-                renderArray({ comparing: [i, i - gap] });
-                playSound(array[i], maxVal);
-                await sleep(getDelay());
-
-                for (j = i; j >= gap && array[j - gap] > temp; j -= gap) {
+                let j = i;
+                while (j >= gap) {
                     if (stopped) return;
-
-                    comparisons++;
-                    swaps++;
-                    array[j] = array[j - gap];
-                    renderArray({ swapping: [j, j - gap] });
-                    playSwapSound(array[j], array[j - gap], maxVal);
-                    await sleep(getDelay());
-                    updateStats();
+                    if (await compare(j - gap, j) > 0) {
+                        await swap(j - gap, j);
+                        j -= gap;
+                    } else {
+                        break;
+                    }
                 }
-
-                array[j] = temp;
             }
         }
     }
 
+    // Cocktail Shaker Sort
     async function cocktailSort() {
-        const n = array.length;
-        const maxVal = Math.max(...array);
         let swapped = true;
         let start = 0;
-        let end = n - 1;
+        let end = array.length - 1;
 
         while (swapped) {
             swapped = false;
 
-            // Forward pass
             for (let i = start; i < end; i++) {
                 if (stopped) return;
-
-                comparisons++;
-                renderArray({ comparing: [i, i + 1] });
-                playSound(array[i], maxVal);
-                await sleep(getDelay());
-
-                if (array[i] > array[i + 1]) {
-                    swaps++;
-                    [array[i], array[i + 1]] = [array[i + 1], array[i]];
+                if (await compare(i, i + 1) > 0) {
+                    await swap(i, i + 1);
                     swapped = true;
-                    renderArray({ swapping: [i, i + 1] });
-                    playSwapSound(array[i], array[i + 1], maxVal);
-                    await sleep(getDelay());
                 }
-                updateStats();
             }
+            await markSorted([end]);
+            end--;
 
             if (!swapped) break;
             swapped = false;
-            end--;
 
-            // Backward pass
             for (let i = end - 1; i >= start; i--) {
                 if (stopped) return;
-
-                comparisons++;
-                renderArray({ comparing: [i, i + 1] });
-                playSound(array[i], maxVal);
-                await sleep(getDelay());
-
-                if (array[i] > array[i + 1]) {
-                    swaps++;
-                    [array[i], array[i + 1]] = [array[i + 1], array[i]];
+                if (await compare(i, i + 1) > 0) {
+                    await swap(i, i + 1);
                     swapped = true;
-                    renderArray({ swapping: [i, i + 1] });
-                    playSwapSound(array[i], array[i + 1], maxVal);
-                    await sleep(getDelay());
                 }
-                updateStats();
             }
-
+            await markSorted([start]);
             start++;
         }
     }
 
-    // Mark all as sorted
-    async function markSorted() {
-        const maxVal = Math.max(...array);
-        for (let i = 0; i < array.length; i++) {
-            renderArray({ sorted: Array.from({length: i + 1}, (_, k) => k) });
-            playSound(array[i], maxVal);
-            await sleep(15);
+    // Comb Sort
+    async function combSort() {
+        const n = array.length;
+        let gap = n;
+        let shrink = 1.3;
+        let sorted = false;
+
+        while (!sorted) {
+            gap = Math.floor(gap / shrink);
+            if (gap <= 1) {
+                gap = 1;
+                sorted = true;
+            }
+
+            for (let i = 0; i + gap < n; i++) {
+                if (stopped) return;
+                if (await compare(i, i + gap) > 0) {
+                    await swap(i, i + gap);
+                    sorted = false;
+                }
+            }
         }
-        playCompletionSound();
+    }
+
+    // Gnome Sort
+    async function gnomeSort() {
+        let i = 0;
+        while (i < array.length) {
+            if (stopped) return;
+            if (i === 0 || await compare(i - 1, i) <= 0) {
+                i++;
+            } else {
+                await swap(i - 1, i);
+                i--;
+            }
+        }
+    }
+
+    // Odd-Even Sort
+    async function oddEvenSort() {
+        let sorted = false;
+        while (!sorted) {
+            sorted = true;
+
+            for (let i = 1; i < array.length - 1; i += 2) {
+                if (stopped) return;
+                if (await compare(i, i + 1) > 0) {
+                    await swap(i, i + 1);
+                    sorted = false;
+                }
+            }
+
+            for (let i = 0; i < array.length - 1; i += 2) {
+                if (stopped) return;
+                if (await compare(i, i + 1) > 0) {
+                    await swap(i, i + 1);
+                    sorted = false;
+                }
+            }
+        }
+    }
+
+    // Bitonic Sort
+    async function bitonicSort() {
+        const n = array.length;
+        // Pad to power of 2
+        const pow2 = Math.pow(2, Math.ceil(Math.log2(n)));
+        while (array.length < pow2) {
+            array.push(pow2 + 1);
+        }
+        await bitonicSortHelper(0, array.length, true);
+        array.length = n;
+    }
+
+    async function bitonicSortHelper(low, cnt, dir) {
+        if (cnt > 1 && !stopped) {
+            const k = Math.floor(cnt / 2);
+            await bitonicSortHelper(low, k, true);
+            await bitonicSortHelper(low + k, k, false);
+            await bitonicMerge(low, cnt, dir);
+        }
+    }
+
+    async function bitonicMerge(low, cnt, dir) {
+        if (cnt > 1 && !stopped) {
+            const k = Math.floor(cnt / 2);
+            for (let i = low; i < low + k; i++) {
+                if (stopped) return;
+                const cmp = await compare(i, i + k);
+                if ((dir && cmp > 0) || (!dir && cmp < 0)) {
+                    await swap(i, i + k);
+                }
+            }
+            await bitonicMerge(low, k, dir);
+            await bitonicMerge(low + k, k, dir);
+        }
+    }
+
+    // Mark all sorted animation
+    async function markAllSorted() {
+        for (let i = 0; i < array.length; i++) {
+            sortedIndices.add(i);
+            playAccess(i);
+            render();
+            updateProgress();
+            await sleep(5);
+        }
+        playCompletion();
     }
 
     // Main sort function
@@ -1044,38 +1036,56 @@
         initAudio();
         sorting = true;
         stopped = false;
+        sortedIndices.clear();
         resetStats();
         startTime = performance.now();
-
-        sortBtn.style.display = 'none';
-        stopBtn.style.display = 'flex';
-        generateBtn.disabled = true;
-        algorithmSelect.disabled = true;
-        arraySizeSlider.disabled = true;
+        document.getElementById('status').textContent = 'Sorting...';
+        startBtn.disabled = true;
+        shuffleBtn.disabled = true;
+        startBtn.textContent = '⏹ Stop';
+        startBtn.classList.remove('btn-start');
+        startBtn.classList.add('btn-stop');
+        character.classList.add('excited');
 
         const algorithm = algorithmSelect.value;
 
-        switch (algorithm) {
-            case 'bubble': await bubbleSort(); break;
-            case 'selection': await selectionSort(); break;
-            case 'insertion': await insertionSort(); break;
-            case 'merge': await mergeSort(); break;
-            case 'quick': await quickSort(); break;
-            case 'heap': await heapSort(); break;
-            case 'shell': await shellSort(); break;
-            case 'cocktail': await cocktailSort(); break;
+        try {
+            switch (algorithm) {
+                case 'bubble': await bubbleSort(); break;
+                case 'selection': await selectionSort(); break;
+                case 'insertion': await insertionSort(); break;
+                case 'merge': await mergeSort(); break;
+                case 'quick': await quickSort(); break;
+                case 'heap': await heapSort(); break;
+                case 'radix': await radixSort(); break;
+                case 'counting': await countingSort(); break;
+                case 'shell': await shellSort(); break;
+                case 'cocktail': await cocktailSort(); break;
+                case 'comb': await combSort(); break;
+                case 'gnome': await gnomeSort(); break;
+                case 'oddeven': await oddEvenSort(); break;
+                case 'bitonic': await bitonicSort(); break;
+            }
+
+            if (!stopped) {
+                await markAllSorted();
+                document.getElementById('status').textContent = 'Complete!';
+            } else {
+                document.getElementById('status').textContent = 'Stopped';
+            }
+        } catch (e) {
+            console.error(e);
         }
 
-        if (!stopped) {
-            await markSorted();
-        }
-
+        highlightIndices = [];
+        render();
         sorting = false;
-        sortBtn.style.display = 'flex';
-        stopBtn.style.display = 'none';
-        generateBtn.disabled = false;
-        algorithmSelect.disabled = false;
-        arraySizeSlider.disabled = false;
+        startBtn.disabled = false;
+        shuffleBtn.disabled = false;
+        startBtn.textContent = '▶ Start';
+        startBtn.classList.remove('btn-stop');
+        startBtn.classList.add('btn-start');
+        character.classList.remove('excited');
     }
 
     function stopSort() {
@@ -1083,33 +1093,39 @@
     }
 
     // Event Listeners
-    generateBtn.addEventListener('click', generateArray);
-    sortBtn.addEventListener('click', startSort);
-    stopBtn.addEventListener('click', stopSort);
-
-    soundBtn.addEventListener('click', () => {
-        initAudio();
-        soundEnabled = !soundEnabled;
-        soundBtn.innerHTML = soundEnabled ?
-            '<i class="fas fa-volume-up"></i>' :
-            '<i class="fas fa-volume-mute"></i>';
-        soundBtn.classList.toggle('muted', !soundEnabled);
+    startBtn.addEventListener('click', () => {
+        if (sorting) {
+            stopSort();
+        } else {
+            startSort();
+        }
     });
 
-    algorithmSelect.addEventListener('change', updateAlgorithmInfo);
+    shuffleBtn.addEventListener('click', () => {
+        if (!sorting) shuffle();
+    });
+
+    algorithmSelect.addEventListener('change', updateAlgoInfo);
 
     arraySizeSlider.addEventListener('input', () => {
-        document.getElementById('sizeValue').textContent = arraySizeSlider.value;
-        generateArray();
+        document.getElementById('sizeLabel').textContent = arraySizeSlider.value;
+        if (!sorting) generateArray();
     });
 
     speedSlider.addEventListener('input', () => {
-        document.getElementById('speedValue').textContent = speedSlider.value;
+        const val = parseInt(speedSlider.value);
+        let label = 'Medium';
+        if (val < 30) label = 'Slow';
+        else if (val < 60) label = 'Medium';
+        else if (val < 90) label = 'Fast';
+        else label = 'Ultra';
+        document.getElementById('speedLabel').textContent = label;
     });
 
-    // Initialize
+    // Init
     generateArray();
-    updateAlgorithmInfo();
+    updateAlgoInfo();
+    render();
     </script>
 </body>
 </html>
