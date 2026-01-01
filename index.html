@@ -8,1124 +8,244 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Segoe UI', -apple-system, sans-serif;
-            background: #000;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
             min-height: 100vh;
-            overflow: hidden;
-            user-select: none;
-        }
-
-        #canvas {
-            display: block;
-            background: #000;
-        }
-
-        /* Control Panel */
-        .controls {
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             color: #fff;
-            z-index: 100;
-            border: 1px solid rgba(255,255,255,0.15);
-            min-width: 280px;
+            padding: 40px 20px;
         }
 
-        .controls h2 {
-            font-size: 16px;
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
             margin-bottom: 15px;
-            color: #00ff88;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            background: linear-gradient(90deg, #00d2ff, #3a7bd5, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient 3s ease infinite;
+            background-size: 200% 200%;
         }
 
-        .control-row {
+        @keyframes gradient {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #8892b0;
+        }
+
+        .versions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .version-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 35px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .version-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--accent);
+        }
+
+        .version-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: var(--accent);
+        }
+
+        .version-card.v1 { --accent: linear-gradient(90deg, #00d2ff, #3a7bd5); }
+        .version-card.v2 { --accent: linear-gradient(90deg, #f093fb, #f5576c); }
+        .version-card.v3 { --accent: linear-gradient(90deg, #ff6b9d, #c44569); }
+
+        .version-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .version-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .version-subtitle {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+
+        .version-features {
+            list-style: none;
+        }
+
+        .version-features li {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
-            margin-bottom: 12px;
             gap: 10px;
         }
 
-        .control-row label {
-            font-size: 12px;
-            color: #aaa;
-            min-width: 70px;
+        .version-features li::before {
+            content: '✓';
+            color: #10b981;
+            font-weight: bold;
         }
 
-        .control-row select,
-        .control-row input[type="range"] {
-            flex: 1;
-        }
-
-        select {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 6px;
-            padding: 8px 12px;
-            color: #fff;
-            font-size: 13px;
-            cursor: pointer;
-            outline: none;
-        }
-        select option { background: #111; }
-
-        input[type="range"] {
-            -webkit-appearance: none;
-            height: 6px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 3px;
-            cursor: pointer;
-        }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #00ff88;
-            cursor: pointer;
-        }
-
-        .value-label {
-            font-size: 12px;
-            color: #00ff88;
-            min-width: 50px;
-            text-align: right;
-        }
-
-        .btn-row {
-            display: flex;
-            gap: 8px;
+        .version-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
             margin-top: 15px;
         }
 
-        .btn {
-            flex: 1;
-            padding: 10px 16px;
-            border: none;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-start {
-            background: linear-gradient(135deg, #00ff88, #00cc6a);
-            color: #000;
-        }
-        .btn-start:hover { transform: scale(1.02); }
-        .btn-start:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-        .btn-stop {
-            background: linear-gradient(135deg, #ff4444, #cc0000);
-            color: #fff;
-        }
-        .btn-shuffle {
-            background: rgba(255,255,255,0.15);
-            color: #fff;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        .btn-shuffle:hover { background: rgba(255,255,255,0.25); }
+        .version-card.v1 .version-badge { background: rgba(0, 210, 255, 0.2); color: #00d2ff; }
+        .version-card.v2 .version-badge { background: rgba(240, 147, 251, 0.2); color: #f093fb; }
+        .version-card.v3 .version-badge { background: rgba(255, 107, 157, 0.2); color: #ff6b9d; }
 
-        .checkbox-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        .checkbox-row input { width: 16px; height: 16px; cursor: pointer; }
-        .checkbox-row label { font-size: 12px; color: #aaa; cursor: pointer; }
-
-        /* Stats Panel */
-        .stats {
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 18px;
-            color: #fff;
-            z-index: 100;
-            border: 1px solid rgba(255,255,255,0.15);
-            min-width: 180px;
+        .footer {
+            margin-top: 60px;
+            text-align: center;
+            color: #64748b;
+            font-size: 0.9rem;
         }
 
-        .stats h3 {
-            font-size: 14px;
-            color: #00ff88;
-            margin-bottom: 12px;
+        .footer a {
+            color: #3a7bd5;
+            text-decoration: none;
         }
 
-        .stat-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 13px;
-        }
-        .stat-item .label { color: #888; }
-        .stat-item .value { color: #fff; font-weight: 600; }
-
-        /* Character */
-        .character {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 50;
-            pointer-events: none;
-            transition: transform 0.3s ease;
-        }
-        .character img {
-            max-height: 200px;
-            filter: drop-shadow(0 0 20px rgba(0,255,136,0.3));
-        }
-        .character.excited img {
-            animation: bounce 0.3s ease infinite;
-        }
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+        .footer a:hover {
+            text-decoration: underline;
         }
 
-        /* Algorithm Info */
-        .algo-info {
-            position: fixed;
-            bottom: 15px;
-            left: 15px;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 15px 20px;
-            color: #fff;
-            z-index: 100;
-            border: 1px solid rgba(255,255,255,0.15);
-        }
-        .algo-info h4 {
-            font-size: 14px;
-            color: #00ff88;
-            margin-bottom: 8px;
-        }
-        .algo-info p {
-            font-size: 12px;
-            color: #888;
-            line-height: 1.5;
-        }
-        .algo-info .complexity {
-            display: flex;
-            gap: 15px;
-            margin-top: 8px;
-        }
-        .algo-info .complexity span {
-            font-size: 11px;
-            color: #aaa;
-        }
-        .algo-info .complexity strong {
-            color: #fff;
-        }
-
-        /* Progress bar */
-        .progress-bar {
+        /* Animated background bars */
+        .bg-bars {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            height: 4px;
-            background: rgba(255,255,255,0.1);
-            z-index: 200;
+            height: 150px;
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            padding: 0 10%;
+            opacity: 0.15;
+            z-index: -1;
         }
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #00ff88, #00cc6a);
-            width: 0%;
-            transition: width 0.1s;
+
+        .bg-bar {
+            flex: 1;
+            background: linear-gradient(180deg, #3a7bd5, #00d2ff);
+            border-radius: 4px 4px 0 0;
+            animation: bgBar 2s ease-in-out infinite;
+        }
+
+        @keyframes bgBar {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(0.5); }
         }
     </style>
 </head>
 <body>
-    <canvas id="canvas"></canvas>
+    <div class="bg-bars" id="bgBars"></div>
 
-    <div class="controls">
-        <h2>🎵 Sorting Visualizer</h2>
+    <header class="header">
+        <h1>Sorting Visualizer</h1>
+        <p>Watch sorting algorithms come to life</p>
+    </header>
 
-        <div class="control-row">
-            <label>Algorithm</label>
-            <select id="algorithm">
-                <option value="bubble">Bubble Sort</option>
-                <option value="selection">Selection Sort</option>
-                <option value="insertion">Insertion Sort</option>
-                <option value="merge">Merge Sort</option>
-                <option value="quick">Quick Sort</option>
-                <option value="heap">Heap Sort</option>
-                <option value="radix">Radix Sort (LSD)</option>
-                <option value="counting">Counting Sort</option>
-                <option value="shell">Shell Sort</option>
-                <option value="cocktail">Cocktail Shaker</option>
-                <option value="comb">Comb Sort</option>
-                <option value="gnome">Gnome Sort</option>
-                <option value="oddeven">Odd-Even Sort</option>
-                <option value="bitonic">Bitonic Sort</option>
-            </select>
-        </div>
+    <div class="versions">
+        <a href="v1-basic.html" class="version-card v1">
+            <span class="version-icon">📊</span>
+            <h2 class="version-title">Basic Edition</h2>
+            <p class="version-subtitle">Clean and simple visualization</p>
+            <ul class="version-features">
+                <li>8 sorting algorithms</li>
+                <li>Adjustable speed & size</li>
+                <li>Color-coded states</li>
+                <li>Algorithm complexity info</li>
+            </ul>
+            <span class="version-badge">Lightweight</span>
+        </a>
 
-        <div class="control-row">
-            <label>Size</label>
-            <input type="range" id="arraySize" min="16" max="512" value="128">
-            <span class="value-label" id="sizeLabel">128</span>
-        </div>
+        <a href="v2-sound.html" class="version-card v2">
+            <span class="version-icon">🎵</span>
+            <h2 class="version-title">Sound Edition</h2>
+            <p class="version-subtitle">Audio-enhanced experience</p>
+            <ul class="version-features">
+                <li>Web Audio API integration</li>
+                <li>Pitch mapped to values</li>
+                <li>Completion melody</li>
+                <li>Sound wave indicator</li>
+            </ul>
+            <span class="version-badge">Audio</span>
+        </a>
 
-        <div class="control-row">
-            <label>Speed</label>
-            <input type="range" id="speed" min="0" max="100" value="85">
-            <span class="value-label" id="speedLabel">Fast</span>
-        </div>
-
-        <div class="checkbox-row">
-            <input type="checkbox" id="soundEnabled" checked>
-            <label for="soundEnabled">🔊 Sound Effects</label>
-        </div>
-
-        <div class="checkbox-row">
-            <input type="checkbox" id="rainbowMode">
-            <label for="rainbowMode">🌈 Rainbow Mode</label>
-        </div>
-
-        <div class="btn-row">
-            <button class="btn btn-shuffle" id="shuffleBtn">Shuffle</button>
-            <button class="btn btn-start" id="startBtn">▶ Start</button>
-        </div>
+        <a href="v3-character.html" class="version-card v3">
+            <span class="version-icon">🎀</span>
+            <h2 class="version-title">Character Edition</h2>
+            <p class="version-subtitle">Animated mascot companion</p>
+            <ul class="version-features">
+                <li>Animated character reactions</li>
+                <li>Speech bubbles</li>
+                <li>Particle effects</li>
+                <li>Canvas rendering</li>
+            </ul>
+            <span class="version-badge">Premium</span>
+        </a>
     </div>
 
-    <div class="stats">
-        <h3>📊 Statistics</h3>
-        <div class="stat-item">
-            <span class="label">Comparisons</span>
-            <span class="value" id="comparisons">0</span>
-        </div>
-        <div class="stat-item">
-            <span class="label">Array Accesses</span>
-            <span class="value" id="accesses">0</span>
-        </div>
-        <div class="stat-item">
-            <span class="label">Time</span>
-            <span class="value" id="time">0.00s</span>
-        </div>
-        <div class="stat-item">
-            <span class="label">Status</span>
-            <span class="value" id="status">Ready</span>
-        </div>
-    </div>
-
-    <div class="character" id="character">
-        <img src="character.webp" alt="Character">
-    </div>
-
-    <div class="algo-info" id="algoInfo">
-        <h4 id="algoName">Bubble Sort</h4>
-        <div class="complexity">
-            <span>Best: <strong id="bestTime">O(n)</strong></span>
-            <span>Avg: <strong id="avgTime">O(n²)</strong></span>
-            <span>Worst: <strong id="worstTime">O(n²)</strong></span>
-        </div>
-    </div>
-
-    <div class="progress-bar">
-        <div class="progress-fill" id="progressFill"></div>
-    </div>
+    <footer class="footer">
+        <p>
+            <a href="https://github.com/hwkim3330/sort" target="_blank">GitHub</a>
+            &nbsp;•&nbsp; Made with ❤️
+        </p>
+    </footer>
 
     <script>
-    // ==========================================
-    // Sorting Algorithm Visualizer v2.0
-    // ==========================================
-
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-
-    // Resize canvas
-    function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
-    resize();
-    window.addEventListener('resize', resize);
-
-    // Algorithm info
-    const algoData = {
-        bubble: { name: 'Bubble Sort', best: 'O(n)', avg: 'O(n²)', worst: 'O(n²)' },
-        selection: { name: 'Selection Sort', best: 'O(n²)', avg: 'O(n²)', worst: 'O(n²)' },
-        insertion: { name: 'Insertion Sort', best: 'O(n)', avg: 'O(n²)', worst: 'O(n²)' },
-        merge: { name: 'Merge Sort', best: 'O(n log n)', avg: 'O(n log n)', worst: 'O(n log n)' },
-        quick: { name: 'Quick Sort', best: 'O(n log n)', avg: 'O(n log n)', worst: 'O(n²)' },
-        heap: { name: 'Heap Sort', best: 'O(n log n)', avg: 'O(n log n)', worst: 'O(n log n)' },
-        radix: { name: 'Radix Sort (LSD)', best: 'O(nk)', avg: 'O(nk)', worst: 'O(nk)' },
-        counting: { name: 'Counting Sort', best: 'O(n+k)', avg: 'O(n+k)', worst: 'O(n+k)' },
-        shell: { name: 'Shell Sort', best: 'O(n log n)', avg: 'O(n^1.3)', worst: 'O(n²)' },
-        cocktail: { name: 'Cocktail Shaker Sort', best: 'O(n)', avg: 'O(n²)', worst: 'O(n²)' },
-        comb: { name: 'Comb Sort', best: 'O(n log n)', avg: 'O(n²/2^p)', worst: 'O(n²)' },
-        gnome: { name: 'Gnome Sort', best: 'O(n)', avg: 'O(n²)', worst: 'O(n²)' },
-        oddeven: { name: 'Odd-Even Sort', best: 'O(n)', avg: 'O(n²)', worst: 'O(n²)' },
-        bitonic: { name: 'Bitonic Sort', best: 'O(log²n)', avg: 'O(log²n)', worst: 'O(log²n)' }
-    };
-
-    // State
-    let array = [];
-    let sortedIndices = new Set();
-    let highlightIndices = [];
-    let highlightType = 'normal'; // 'comparing', 'swapping', 'sorted'
-    let sorting = false;
-    let stopped = false;
-    let comparisons = 0;
-    let accesses = 0;
-    let startTime = 0;
-    let sortedCount = 0;
-
-    // Audio
-    let audioCtx = null;
-    let mainGain = null;
-
-    function initAudio() {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            mainGain = audioCtx.createGain();
-            mainGain.gain.value = 0.15;
-            mainGain.connect(audioCtx.destination);
+        // Generate background bars
+        const bgBars = document.getElementById('bgBars');
+        for (let i = 0; i < 30; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'bg-bar';
+            bar.style.height = (20 + Math.random() * 100) + 'px';
+            bar.style.animationDelay = (Math.random() * 2) + 's';
+            bgBars.appendChild(bar);
         }
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
-    }
-
-    function playTone(frequency, duration = 0.05, type = 'sine') {
-        if (!document.getElementById('soundEnabled').checked || !audioCtx) return;
-
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-
-        osc.type = type;
-        osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
-
-        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
-    }
-
-    function valueToFreq(value, maxValue) {
-        // Map to musical scale (C3 to C6)
-        const minFreq = 130.81; // C3
-        const maxFreq = 1046.50; // C6
-        return minFreq + (value / maxValue) * (maxFreq - minFreq);
-    }
-
-    function playAccess(index) {
-        if (!array[index]) return;
-        const freq = valueToFreq(array[index], array.length);
-        playTone(freq, 0.05, 'sine');
-    }
-
-    function playCompletion() {
-        if (!document.getElementById('soundEnabled').checked || !audioCtx) return;
-
-        const notes = [523.25, 659.25, 783.99, 1046.50];
-        notes.forEach((freq, i) => {
-            setTimeout(() => playTone(freq, 0.2, 'sine'), i * 100);
-        });
-    }
-
-    // DOM
-    const algorithmSelect = document.getElementById('algorithm');
-    const arraySizeSlider = document.getElementById('arraySize');
-    const speedSlider = document.getElementById('speed');
-    const startBtn = document.getElementById('startBtn');
-    const shuffleBtn = document.getElementById('shuffleBtn');
-    const character = document.getElementById('character');
-
-    // Generate array
-    function generateArray() {
-        const size = parseInt(arraySizeSlider.value);
-        array = [];
-        for (let i = 1; i <= size; i++) {
-            array.push(i);
-        }
-        shuffle();
-    }
-
-    function shuffle() {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        sortedIndices.clear();
-        highlightIndices = [];
-        resetStats();
-        render();
-    }
-
-    function resetStats() {
-        comparisons = 0;
-        accesses = 0;
-        sortedCount = 0;
-        document.getElementById('comparisons').textContent = '0';
-        document.getElementById('accesses').textContent = '0';
-        document.getElementById('time').textContent = '0.00s';
-        document.getElementById('status').textContent = 'Ready';
-        document.getElementById('progressFill').style.width = '0%';
-    }
-
-    function updateStats() {
-        document.getElementById('comparisons').textContent = comparisons.toLocaleString();
-        document.getElementById('accesses').textContent = accesses.toLocaleString();
-        const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
-        document.getElementById('time').textContent = elapsed + 's';
-    }
-
-    function updateProgress() {
-        const progress = (sortedIndices.size / array.length) * 100;
-        document.getElementById('progressFill').style.width = progress + '%';
-    }
-
-    function getDelay() {
-        const speed = parseInt(speedSlider.value);
-        // Exponential scale: 0 = 500ms, 100 = 0ms
-        return Math.floor(500 * Math.pow(0.95, speed));
-    }
-
-    async function sleep(ms) {
-        if (ms <= 0) return;
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    // Render
-    function render() {
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        const n = array.length;
-        const barWidth = canvas.width / n;
-        const maxVal = Math.max(...array);
-        const rainbow = document.getElementById('rainbowMode').checked;
-
-        for (let i = 0; i < n; i++) {
-            const barHeight = (array[i] / maxVal) * (canvas.height - 50);
-            const x = i * barWidth;
-            const y = canvas.height - barHeight;
-
-            let color;
-            if (sortedIndices.has(i)) {
-                color = '#00ff88';
-            } else if (highlightIndices.includes(i)) {
-                if (highlightType === 'comparing') {
-                    color = '#ffff00';
-                } else if (highlightType === 'swapping') {
-                    color = '#ff4444';
-                } else if (highlightType === 'pivot') {
-                    color = '#ff00ff';
-                } else {
-                    color = '#00aaff';
-                }
-            } else if (rainbow) {
-                const hue = (array[i] / maxVal) * 360;
-                color = `hsl(${hue}, 100%, 50%)`;
-            } else {
-                const brightness = 30 + (array[i] / maxVal) * 70;
-                color = `hsl(200, 80%, ${brightness}%)`;
-            }
-
-            ctx.fillStyle = color;
-
-            if (barWidth > 2) {
-                ctx.fillRect(x + 0.5, y, barWidth - 1, barHeight);
-            } else {
-                ctx.fillRect(x, y, barWidth, barHeight);
-            }
-        }
-    }
-
-    // Update algorithm info
-    function updateAlgoInfo() {
-        const algo = algorithmSelect.value;
-        const info = algoData[algo];
-        document.getElementById('algoName').textContent = info.name;
-        document.getElementById('bestTime').textContent = info.best;
-        document.getElementById('avgTime').textContent = info.avg;
-        document.getElementById('worstTime').textContent = info.worst;
-    }
-
-    // ==========================================
-    // Sorting Algorithms
-    // ==========================================
-
-    async function compare(i, j) {
-        comparisons++;
-        accesses += 2;
-        highlightIndices = [i, j];
-        highlightType = 'comparing';
-        playAccess(i);
-        render();
-        updateStats();
-        await sleep(getDelay());
-        return array[i] - array[j];
-    }
-
-    async function swap(i, j) {
-        accesses += 4;
-        [array[i], array[j]] = [array[j], array[i]];
-        highlightIndices = [i, j];
-        highlightType = 'swapping';
-        playAccess(i);
-        playAccess(j);
-        render();
-        updateStats();
-        await sleep(getDelay());
-    }
-
-    async function markSorted(indices) {
-        indices.forEach(i => sortedIndices.add(i));
-        updateProgress();
-        render();
-    }
-
-    // Bubble Sort
-    async function bubbleSort() {
-        const n = array.length;
-        for (let i = 0; i < n - 1; i++) {
-            for (let j = 0; j < n - i - 1; j++) {
-                if (stopped) return;
-                if (await compare(j, j + 1) > 0) {
-                    await swap(j, j + 1);
-                }
-            }
-            await markSorted([n - i - 1]);
-        }
-        await markSorted([0]);
-    }
-
-    // Selection Sort
-    async function selectionSort() {
-        const n = array.length;
-        for (let i = 0; i < n - 1; i++) {
-            let minIdx = i;
-            for (let j = i + 1; j < n; j++) {
-                if (stopped) return;
-                if (await compare(j, minIdx) < 0) {
-                    minIdx = j;
-                }
-            }
-            if (minIdx !== i) {
-                await swap(i, minIdx);
-            }
-            await markSorted([i]);
-        }
-        await markSorted([n - 1]);
-    }
-
-    // Insertion Sort
-    async function insertionSort() {
-        const n = array.length;
-        for (let i = 1; i < n; i++) {
-            let j = i;
-            while (j > 0) {
-                if (stopped) return;
-                if (await compare(j - 1, j) > 0) {
-                    await swap(j - 1, j);
-                    j--;
-                } else {
-                    break;
-                }
-            }
-        }
-    }
-
-    // Merge Sort
-    async function mergeSort() {
-        await mergeSortHelper(0, array.length - 1);
-    }
-
-    async function mergeSortHelper(left, right) {
-        if (left >= right || stopped) return;
-        const mid = Math.floor((left + right) / 2);
-        await mergeSortHelper(left, mid);
-        await mergeSortHelper(mid + 1, right);
-        await merge(left, mid, right);
-    }
-
-    async function merge(left, mid, right) {
-        const temp = [];
-        let i = left, j = mid + 1;
-
-        while (i <= mid && j <= right) {
-            if (stopped) return;
-            comparisons++;
-            accesses += 2;
-            highlightIndices = [i, j];
-            highlightType = 'comparing';
-            playAccess(i);
-            render();
-            updateStats();
-            await sleep(getDelay());
-
-            if (array[i] <= array[j]) {
-                temp.push(array[i++]);
-            } else {
-                temp.push(array[j++]);
-            }
-        }
-
-        while (i <= mid) temp.push(array[i++]);
-        while (j <= right) temp.push(array[j++]);
-
-        for (let k = 0; k < temp.length; k++) {
-            if (stopped) return;
-            array[left + k] = temp[k];
-            accesses++;
-            highlightIndices = [left + k];
-            highlightType = 'swapping';
-            playAccess(left + k);
-            render();
-            updateStats();
-            await sleep(getDelay() / 2);
-        }
-    }
-
-    // Quick Sort
-    async function quickSort() {
-        await quickSortHelper(0, array.length - 1);
-    }
-
-    async function quickSortHelper(low, high) {
-        if (low < high && !stopped) {
-            const pi = await partition(low, high);
-            await quickSortHelper(low, pi - 1);
-            await quickSortHelper(pi + 1, high);
-        }
-    }
-
-    async function partition(low, high) {
-        const pivot = array[high];
-        highlightIndices = [high];
-        highlightType = 'pivot';
-        render();
-
-        let i = low - 1;
-        for (let j = low; j < high; j++) {
-            if (stopped) return low;
-            comparisons++;
-            accesses++;
-            highlightIndices = [j, high];
-            highlightType = 'comparing';
-            playAccess(j);
-            render();
-            updateStats();
-            await sleep(getDelay());
-
-            if (array[j] < pivot) {
-                i++;
-                await swap(i, j);
-            }
-        }
-        await swap(i + 1, high);
-        await markSorted([i + 1]);
-        return i + 1;
-    }
-
-    // Heap Sort
-    async function heapSort() {
-        const n = array.length;
-
-        for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
-            await heapify(n, i);
-        }
-
-        for (let i = n - 1; i > 0; i--) {
-            if (stopped) return;
-            await swap(0, i);
-            await markSorted([i]);
-            await heapify(i, 0);
-        }
-        await markSorted([0]);
-    }
-
-    async function heapify(n, i) {
-        let largest = i;
-        const left = 2 * i + 1;
-        const right = 2 * i + 2;
-
-        if (left < n) {
-            if (await compare(left, largest) > 0) {
-                largest = left;
-            }
-        }
-
-        if (right < n) {
-            if (await compare(right, largest) > 0) {
-                largest = right;
-            }
-        }
-
-        if (largest !== i && !stopped) {
-            await swap(i, largest);
-            await heapify(n, largest);
-        }
-    }
-
-    // Radix Sort (LSD)
-    async function radixSort() {
-        const max = Math.max(...array);
-        for (let exp = 1; Math.floor(max / exp) > 0; exp *= 10) {
-            await countingSortByDigit(exp);
-        }
-    }
-
-    async function countingSortByDigit(exp) {
-        const n = array.length;
-        const output = new Array(n);
-        const count = new Array(10).fill(0);
-
-        for (let i = 0; i < n; i++) {
-            if (stopped) return;
-            const digit = Math.floor(array[i] / exp) % 10;
-            count[digit]++;
-            accesses++;
-            highlightIndices = [i];
-            highlightType = 'comparing';
-            playAccess(i);
-            render();
-            updateStats();
-            await sleep(getDelay() / 2);
-        }
-
-        for (let i = 1; i < 10; i++) {
-            count[i] += count[i - 1];
-        }
-
-        for (let i = n - 1; i >= 0; i--) {
-            if (stopped) return;
-            const digit = Math.floor(array[i] / exp) % 10;
-            output[count[digit] - 1] = array[i];
-            count[digit]--;
-        }
-
-        for (let i = 0; i < n; i++) {
-            if (stopped) return;
-            array[i] = output[i];
-            accesses++;
-            highlightIndices = [i];
-            highlightType = 'swapping';
-            playAccess(i);
-            render();
-            updateStats();
-            await sleep(getDelay() / 2);
-        }
-    }
-
-    // Counting Sort
-    async function countingSort() {
-        const max = Math.max(...array);
-        const count = new Array(max + 1).fill(0);
-        const output = new Array(array.length);
-
-        for (let i = 0; i < array.length; i++) {
-            if (stopped) return;
-            count[array[i]]++;
-            accesses++;
-            highlightIndices = [i];
-            highlightType = 'comparing';
-            playAccess(i);
-            render();
-            updateStats();
-            await sleep(getDelay());
-        }
-
-        for (let i = 1; i <= max; i++) {
-            count[i] += count[i - 1];
-        }
-
-        for (let i = array.length - 1; i >= 0; i--) {
-            if (stopped) return;
-            output[count[array[i]] - 1] = array[i];
-            count[array[i]]--;
-        }
-
-        for (let i = 0; i < array.length; i++) {
-            if (stopped) return;
-            array[i] = output[i];
-            accesses++;
-            highlightIndices = [i];
-            highlightType = 'swapping';
-            playAccess(i);
-            await markSorted([i]);
-            render();
-            updateStats();
-            await sleep(getDelay());
-        }
-    }
-
-    // Shell Sort
-    async function shellSort() {
-        const n = array.length;
-        for (let gap = Math.floor(n / 2); gap > 0; gap = Math.floor(gap / 2)) {
-            for (let i = gap; i < n; i++) {
-                let j = i;
-                while (j >= gap) {
-                    if (stopped) return;
-                    if (await compare(j - gap, j) > 0) {
-                        await swap(j - gap, j);
-                        j -= gap;
-                    } else {
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    // Cocktail Shaker Sort
-    async function cocktailSort() {
-        let swapped = true;
-        let start = 0;
-        let end = array.length - 1;
-
-        while (swapped) {
-            swapped = false;
-
-            for (let i = start; i < end; i++) {
-                if (stopped) return;
-                if (await compare(i, i + 1) > 0) {
-                    await swap(i, i + 1);
-                    swapped = true;
-                }
-            }
-            await markSorted([end]);
-            end--;
-
-            if (!swapped) break;
-            swapped = false;
-
-            for (let i = end - 1; i >= start; i--) {
-                if (stopped) return;
-                if (await compare(i, i + 1) > 0) {
-                    await swap(i, i + 1);
-                    swapped = true;
-                }
-            }
-            await markSorted([start]);
-            start++;
-        }
-    }
-
-    // Comb Sort
-    async function combSort() {
-        const n = array.length;
-        let gap = n;
-        let shrink = 1.3;
-        let sorted = false;
-
-        while (!sorted) {
-            gap = Math.floor(gap / shrink);
-            if (gap <= 1) {
-                gap = 1;
-                sorted = true;
-            }
-
-            for (let i = 0; i + gap < n; i++) {
-                if (stopped) return;
-                if (await compare(i, i + gap) > 0) {
-                    await swap(i, i + gap);
-                    sorted = false;
-                }
-            }
-        }
-    }
-
-    // Gnome Sort
-    async function gnomeSort() {
-        let i = 0;
-        while (i < array.length) {
-            if (stopped) return;
-            if (i === 0 || await compare(i - 1, i) <= 0) {
-                i++;
-            } else {
-                await swap(i - 1, i);
-                i--;
-            }
-        }
-    }
-
-    // Odd-Even Sort
-    async function oddEvenSort() {
-        let sorted = false;
-        while (!sorted) {
-            sorted = true;
-
-            for (let i = 1; i < array.length - 1; i += 2) {
-                if (stopped) return;
-                if (await compare(i, i + 1) > 0) {
-                    await swap(i, i + 1);
-                    sorted = false;
-                }
-            }
-
-            for (let i = 0; i < array.length - 1; i += 2) {
-                if (stopped) return;
-                if (await compare(i, i + 1) > 0) {
-                    await swap(i, i + 1);
-                    sorted = false;
-                }
-            }
-        }
-    }
-
-    // Bitonic Sort
-    async function bitonicSort() {
-        const n = array.length;
-        // Pad to power of 2
-        const pow2 = Math.pow(2, Math.ceil(Math.log2(n)));
-        while (array.length < pow2) {
-            array.push(pow2 + 1);
-        }
-        await bitonicSortHelper(0, array.length, true);
-        array.length = n;
-    }
-
-    async function bitonicSortHelper(low, cnt, dir) {
-        if (cnt > 1 && !stopped) {
-            const k = Math.floor(cnt / 2);
-            await bitonicSortHelper(low, k, true);
-            await bitonicSortHelper(low + k, k, false);
-            await bitonicMerge(low, cnt, dir);
-        }
-    }
-
-    async function bitonicMerge(low, cnt, dir) {
-        if (cnt > 1 && !stopped) {
-            const k = Math.floor(cnt / 2);
-            for (let i = low; i < low + k; i++) {
-                if (stopped) return;
-                const cmp = await compare(i, i + k);
-                if ((dir && cmp > 0) || (!dir && cmp < 0)) {
-                    await swap(i, i + k);
-                }
-            }
-            await bitonicMerge(low, k, dir);
-            await bitonicMerge(low + k, k, dir);
-        }
-    }
-
-    // Mark all sorted animation
-    async function markAllSorted() {
-        for (let i = 0; i < array.length; i++) {
-            sortedIndices.add(i);
-            playAccess(i);
-            render();
-            updateProgress();
-            await sleep(5);
-        }
-        playCompletion();
-    }
-
-    // Main sort function
-    async function startSort() {
-        if (sorting) return;
-
-        initAudio();
-        sorting = true;
-        stopped = false;
-        sortedIndices.clear();
-        resetStats();
-        startTime = performance.now();
-        document.getElementById('status').textContent = 'Sorting...';
-        startBtn.disabled = true;
-        shuffleBtn.disabled = true;
-        startBtn.textContent = '⏹ Stop';
-        startBtn.classList.remove('btn-start');
-        startBtn.classList.add('btn-stop');
-        character.classList.add('excited');
-
-        const algorithm = algorithmSelect.value;
-
-        try {
-            switch (algorithm) {
-                case 'bubble': await bubbleSort(); break;
-                case 'selection': await selectionSort(); break;
-                case 'insertion': await insertionSort(); break;
-                case 'merge': await mergeSort(); break;
-                case 'quick': await quickSort(); break;
-                case 'heap': await heapSort(); break;
-                case 'radix': await radixSort(); break;
-                case 'counting': await countingSort(); break;
-                case 'shell': await shellSort(); break;
-                case 'cocktail': await cocktailSort(); break;
-                case 'comb': await combSort(); break;
-                case 'gnome': await gnomeSort(); break;
-                case 'oddeven': await oddEvenSort(); break;
-                case 'bitonic': await bitonicSort(); break;
-            }
-
-            if (!stopped) {
-                await markAllSorted();
-                document.getElementById('status').textContent = 'Complete!';
-            } else {
-                document.getElementById('status').textContent = 'Stopped';
-            }
-        } catch (e) {
-            console.error(e);
-        }
-
-        highlightIndices = [];
-        render();
-        sorting = false;
-        startBtn.disabled = false;
-        shuffleBtn.disabled = false;
-        startBtn.textContent = '▶ Start';
-        startBtn.classList.remove('btn-stop');
-        startBtn.classList.add('btn-start');
-        character.classList.remove('excited');
-    }
-
-    function stopSort() {
-        stopped = true;
-    }
-
-    // Event Listeners
-    startBtn.addEventListener('click', () => {
-        if (sorting) {
-            stopSort();
-        } else {
-            startSort();
-        }
-    });
-
-    shuffleBtn.addEventListener('click', () => {
-        if (!sorting) shuffle();
-    });
-
-    algorithmSelect.addEventListener('change', updateAlgoInfo);
-
-    arraySizeSlider.addEventListener('input', () => {
-        document.getElementById('sizeLabel').textContent = arraySizeSlider.value;
-        if (!sorting) generateArray();
-    });
-
-    speedSlider.addEventListener('input', () => {
-        const val = parseInt(speedSlider.value);
-        let label = 'Medium';
-        if (val < 30) label = 'Slow';
-        else if (val < 60) label = 'Medium';
-        else if (val < 90) label = 'Fast';
-        else label = 'Ultra';
-        document.getElementById('speedLabel').textContent = label;
-    });
-
-    // Init
-    generateArray();
-    updateAlgoInfo();
-    render();
     </script>
 </body>
 </html>
