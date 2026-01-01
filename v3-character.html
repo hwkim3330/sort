@@ -176,12 +176,16 @@
             bottom: 20px;
             right: 20px;
             width: 200px;
+            height: 280px;
+            overflow: hidden;
             transition: transform 0.2s ease;
         }
 
         .character img {
-            width: 100%;
+            width: 280%;
             height: auto;
+            object-fit: cover;
+            object-position: left top;
             filter: drop-shadow(0 0 30px rgba(255, 107, 157, 0.4));
             transition: filter 0.3s, transform 0.3s;
         }
@@ -705,7 +709,9 @@
         return Math.floor(300 * Math.pow(0.96, speed));
     }
 
-    const sleep = ms => ms > 0 ? new Promise(r => setTimeout(r, ms)) : Promise.resolve();
+    const sleep = ms => ms > 0
+        ? new Promise(r => setTimeout(r, ms))
+        : new Promise(r => requestAnimationFrame(r));
 
     async function compare(i, j) {
         comparisons++;

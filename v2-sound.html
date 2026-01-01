@@ -561,7 +561,9 @@
 
     // Utility
     const getDelay = () => parseInt(document.getElementById('delay').value);
-    const sleep = ms => ms > 0 ? new Promise(r => setTimeout(r, ms)) : Promise.resolve();
+    const sleep = ms => ms > 0
+        ? new Promise(r => setTimeout(r, ms))
+        : new Promise(r => requestAnimationFrame(r));
 
     async function access(i) {
         accesses++;
